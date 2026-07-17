@@ -16,7 +16,6 @@
       "run_at": "document_idle"
     }
   ],
-  "host_permissions": ["https://api.alternative.me/*"],
   "permissions": [],
   "browser_specific_settings": {
     "gecko": {

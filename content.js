@@ -76,11 +76,16 @@
     return row || null;
   };
 
-  const findAnchor = (page) => (page === "home" ? findHomeVolumeCard() : findBtcMarketCapRow());
+  const findTopBarAnchor = () => {
+    const sc = document.querySelector('[data-navbar-scroll-indicators-target="scrollContainer"]');
+    if (!sc) return null;
+    const dom = [...sc.children].find((k) => /dominance/i.test(k.textContent));
+    return dom || sc; // insert after Dominance, or append if not found
+  };
 
   // ---- builders ----------------------------------------------------------
-  const infoIcon = () =>
-    `<span class="fng-info tw-inline-block" tabindex="0">` +
+  const infoIcon = (below) =>
+    `<span class="fng-info tw-inline-block${below ? " fng-below" : ""}" tabindex="0">` +
     `<i data-view-component="true" class="far fa-info-circle fa-fw"></i>` +
     `<span class="fng-tooltip" role="tooltip">${TOOLTIP_HTML}</span>` +
     `</span>`;
@@ -103,7 +108,7 @@
         <div class="tw-mt-1 tw-flex tw-flex-wrap tw-items-center tw-text-gray-500
                     dark:tw-text-moon-200 tw-font-semibold tw-text-sm tw-leading-5">
           Fear &amp; Greed Index
-          ${infoIcon()}
+          ${infoIcon(false)}
           <span class="fng-class tw-ml-1.5 tw-font-semibold"></span>
         </div>
       </div>
@@ -123,7 +128,7 @@
     tr.innerHTML = `
       <th data-view-component="true" class="tw-text-left tw-text-gray-500 dark:tw-text-moon-200 tw-font-medium tw-text-sm tw-leading-5">
         Fear &amp; Greed Index
-        ${infoIcon()}
+        ${infoIcon(false)}
       </th>
       <td data-view-component="true" class="tw-pl-2 tw-text-right tw-text-gray-900 dark:tw-text-moon-50 tw-font-semibold tw-text-sm tw-leading-5">
         <span class="fng-value">--</span><span class="fng-class tw-ml-1.5 tw-font-semibold"></span>
@@ -131,15 +136,33 @@
     return tr;
   };
 
+  const buildTopBar = () => {
+    const div = document.createElement("div");
+    div.setAttribute("data-fng-topbar", "");
+    div.setAttribute("data-view-component", "true");
+    div.className = "tw-text-xs tw-leading-4 tw-text-gray-500 dark:tw-text-moon-200 tw-font-regular";
+    div.innerHTML =
+      `Fear &amp; Greed: ` +
+      `<a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener" ` +
+      `class="tw-font-semibold tw-text-slate-700 dark:tw-text-moon-50 fng-value">--</a>` +
+      `<span class="tw-font-semibold fng-class tw-ml-1"></span>` +
+      infoIcon(true);
+    return div;
+  };
+
   const buildFor = (page) => (page === "home" ? buildCard() : buildLine());
 
   const populate = (el, data) => {
     const value = String(data.value);
     const color = colorFor(data.value);
-    el.querySelector(".fng-value").textContent = value;
+    const valEl = el.querySelector(".fng-value");
+    if (valEl) valEl.textContent = value;
     const cls = el.querySelector(".fng-class");
-    cls.textContent = data.label ? "· " + data.label : "";
-    cls.style.color = color;
+    if (cls) {
+      cls.textContent = data.label ? "· " + data.label : "";
+      cls.style.color = color;
+    }
+    if (el.hasAttribute("data-fng-topbar") && valEl) valEl.style.color = color;
     const gauge = el.querySelector(".fng-gauge");
     if (gauge) {
       gauge.style.setProperty("--fng-value", value);
@@ -170,8 +193,70 @@
       });
   };
 
+  // ---- portal tooltip (appended to <body> to escape overflow clipping) ---
+  const setupTooltip = () => {
+    let tip = null;
+
+    const hide = () => {
+      if (tip) {
+        tip.remove();
+        tip = null;
+      }
+    };
+
+    const show = (icon) => {
+      const src = icon.querySelector(".fng-tooltip");
+      if (!src) return;
+      hide();
+      let below = icon.classList.contains("fng-below");
+
+      tip = document.createElement("div");
+      tip.className = "fng-tip";
+      tip.innerHTML = src.innerHTML;
+      document.body.appendChild(tip);
+
+      const r = icon.getBoundingClientRect();
+      const tr = tip.getBoundingClientRect();
+
+      // Flip to below if there isn't enough room above (e.g. near top bar)
+      if (!below && r.top - tr.height - 8 < 8) below = true;
+
+      let top;
+      if (below) {
+        top = r.bottom + 8;
+        tip.classList.add("below");
+      } else {
+        top = r.top - tr.height - 8;
+        tip.classList.add("above");
+      }
+
+      let left = Math.max(8, Math.min(r.left, window.innerWidth - tr.width - 8));
+      tip.style.top = top + "px";
+      tip.style.left = left + "px";
+    };
+
+    document.addEventListener("mouseover", (e) => {
+      const icon = e.target.closest && e.target.closest(".fng-info");
+      if (icon) show(icon);
+    });
+    document.addEventListener("mouseout", (e) => {
+      const icon = e.target.closest && e.target.closest(".fng-info");
+      if (icon) hide();
+    });
+    document.addEventListener("focusin", (e) => {
+      const icon = e.target.closest && e.target.closest(".fng-info");
+      if (icon) show(icon);
+    });
+    document.addEventListener("focusout", (e) => {
+      const icon = e.target.closest && e.target.closest(".fng-info");
+      if (icon) hide();
+    });
+    // Hide on scroll so the fixed bubble never detaches from its icon
+    window.addEventListener("scroll", hide, true);
+  };
+
   // ---- injection ---------------------------------------------------------
-  const inject = () => {
+  const injectPageCard = () => {
     const page = currentPage();
     const existing = document.querySelector("[data-fng-card]");
 
@@ -179,14 +264,13 @@
       if (existing) existing.remove();
       return;
     }
-
     if (existing && existing.getAttribute("data-fng-card") === page) {
       existing.classList.toggle("fng-dark", isDark());
       return;
     }
     if (existing) existing.remove();
 
-    const anchor = findAnchor(page);
+    const anchor = page === "home" ? findHomeVolumeCard() : findBtcMarketCapRow();
     if (!anchor) return; // not rendered yet — observer will retry
 
     const el = buildFor(page);
@@ -194,11 +278,30 @@
     loadData(el);
   };
 
+  const injectTopBar = () => {
+    if (document.querySelector("[data-fng-topbar]")) return;
+    const anchor = findTopBarAnchor();
+    if (!anchor) return; // navbar not rendered yet
+    const el = buildTopBar();
+    if (anchor.parentNode && anchor !== document.querySelector('[data-navbar-scroll-indicators-target="scrollContainer"]')) {
+      anchor.insertAdjacentElement("afterend", el);
+    } else {
+      anchor.appendChild(el);
+    }
+    loadData(el);
+  };
+
+  const inject = () => {
+    injectPageCard();
+    injectTopBar();
+  };
+
   // ---- bootstrap ---------------------------------------------------------
   const start = () => {
     if (started) return;
     started = true;
 
+    setupTooltip();
     inject();
 
     // React to SPA navigation (Turbo / history API)

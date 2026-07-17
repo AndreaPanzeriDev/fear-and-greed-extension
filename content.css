@@ -25,8 +25,8 @@
 }
 
 .fng-gauge-inner {
-  width: calc(var(--fng-size) - 12px);
-  height: calc(var(--fng-size) - 12px);
+  width: calc(var(--fng-size) - 8px);
+  height: calc(var(--fng-size) - 8px);
   border-radius: 50%;
   background: #ffffff;
   color: #0f172a;
@@ -53,7 +53,10 @@
   text-decoration: none;
 }
 
-/* Custom tooltip (self-contained, does not rely on the site's JS) */
+/* Custom tooltip — the visible bubble is portaled to <body> via JS
+   (position: fixed) so it escapes the navbar's overflow and the card's
+   `overflow-hidden`, which would otherwise clip it. The .fng-tooltip span
+   below is only a hidden data holder for the HTML. */
 .fng-info {
   position: relative;
   display: inline-flex;
@@ -62,9 +65,11 @@
 }
 
 .fng-info .fng-tooltip {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 0;
+  display: none;
+}
+
+.fng-tip {
+  position: fixed;
   width: max-content;
   max-width: 280px;
   background: #0b0e11;
@@ -77,35 +82,24 @@
   padding: 10px 12px;
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.15s ease;
-  z-index: 9999;
+  z-index: 2147483600;
   pointer-events: none;
 }
 
-/* centre the bubble over the icon on the homepage card */
-.fng-card .fng-info .fng-tooltip {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.fng-info .fng-tooltip::after {
+.fng-tip::after {
   content: "";
   position: absolute;
+  border: 6px solid transparent;
+}
+
+.fng-tip.above::after {
   top: 100%;
   left: 12px;
-  border: 6px solid transparent;
   border-top-color: #0b0e11;
 }
 
-.fng-card .fng-info .fng-tooltip::after {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.fng-info:hover .fng-tooltip,
-.fng-info:focus .fng-tooltip {
-  opacity: 1;
-  visibility: visible;
+.fng-tip.below::after {
+  bottom: 100%;
+  left: 12px;
+  border-bottom-color: #0b0e11;
 }

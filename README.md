@@ -4,13 +4,16 @@ A cross-browser (Chrome + Firefox) extension that shows the crypto
 **Fear & Greed Index** ([alternative.me](https://alternative.me/crypto/fear-and-greed-index/))
 directly inside [CoinGecko](https://www.coingecko.com/):
 
+- **Top bar** (global navbar) — injected as a small stat right after
+  *Dominance*, styled like the existing navbar stats (Market Cap, 24h Vol, …).
+  Shows on every CoinGecko page.
 - **Homepage** — injected as a card right after the *24h Trading Volume* card
   (same design, in the same responsive column).
 - **Bitcoin page** (`/en/coins/bitcoin`) — injected as a stat **line** directly
   under the *Market Cap* row, matching the existing stats-table style (not a
   card).
 
-Both show an info icon with a **tooltip** explaining how the index is
+All three show an info icon with a **tooltip** explaining how the index is
 calculated (the alternative.me methodology: volatility, momentum/volume,
 social media, surveys, Bitcoin dominance and Google Trends).
 
@@ -46,6 +49,9 @@ automatically matches the site's light/dark theme and responsive layout.
 > site and stays hidden, just like the *24h Trading Volume* card next to it.
 
 ## Notes
+- The top-bar stat lives in the global navbar, so it appears on every page
+  (home, coin pages, etc.) and follows the navbar's responsive horizontal
+  scroll. Its tooltip opens *below* the icon since the bar sits at the top.
 - On the Bitcoin page the index is a line in the stats table (under *Market
   Cap*), so it follows the site's responsive stats layout.
 - The tooltip is self-contained CSS (it does not depend on CoinGecko's own
