@@ -1,0 +1,54 @@
+/* Fear & Greed Index card — only the custom bits that Tailwind on the
+   page does not provide. The card itself reuses CoinGecko's own utility
+   classes (tw-*) so it automatically follows the site's light/dark theme
+   and responsive behaviour. */
+
+.fng-card {
+  font-family: inherit;
+}
+
+.fng-gauge {
+  --fng-size: 56px;
+  --fng-value: 0;
+  --fng-color: #94a3b8;
+  width: var(--fng-size);
+  height: var(--fng-size);
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--fng-color) calc(var(--fng-value) * 1%),
+    rgba(148, 163, 184, 0.25) 0
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.fng-gauge-inner {
+  width: calc(var(--fng-size) - 12px);
+  height: calc(var(--fng-size) - 12px);
+  border-radius: 50%;
+  background: #ffffff;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+/* CoinGecko applies dark mode by adding `darktheme` / `tw-dark` to <body>. */
+.fng-card.fng-dark .fng-gauge-inner {
+  background: #0b0e11;
+  color: #e2e8f0;
+}
+
+.fng-class {
+  color: inherit;
+}
+
+.fng-card a {
+  color: inherit;
+  text-decoration: none;
+}
