@@ -6,8 +6,13 @@ directly inside [CoinGecko](https://www.coingecko.com/):
 
 - **Homepage** — injected as a card right after the *24h Trading Volume* card
   (same design, in the same responsive column).
-- **Bitcoin page** (`/en/coins/bitcoin`) — injected as a card directly under
-  the price.
+- **Bitcoin page** (`/en/coins/bitcoin`) — injected as a stat **line** directly
+  under the *Market Cap* row, matching the existing stats-table style (not a
+  card).
+
+Both show an info icon with a **tooltip** explaining how the index is
+calculated (the alternative.me methodology: volatility, momentum/volume,
+social media, surveys, Bitcoin dominance and Google Trends).
 
 The card follows CoinGecko's own styling (Tailwind utility classes), so it
 automatically matches the site's light/dark theme and responsive layout.
@@ -41,6 +46,10 @@ automatically matches the site's light/dark theme and responsive layout.
 > site and stays hidden, just like the *24h Trading Volume* card next to it.
 
 ## Notes
+- On the Bitcoin page the index is a line in the stats table (under *Market
+  Cap*), so it follows the site's responsive stats layout.
+- The tooltip is self-contained CSS (it does not depend on CoinGecko's own
+  tooltip JS), so it works reliably even as the page hydrates.
 - Data is cached for 5 minutes to avoid redundant requests.
 - If the API is unreachable the card shows `--` instead of a value.
 - The optional `browser_specific_settings.gecko.id` makes the Firefox ID stable;

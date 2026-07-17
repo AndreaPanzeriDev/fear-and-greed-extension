@@ -52,3 +52,60 @@
   color: inherit;
   text-decoration: none;
 }
+
+/* Custom tooltip (self-contained, does not rely on the site's JS) */
+.fng-info {
+  position: relative;
+  display: inline-flex;
+  cursor: help;
+  outline: none;
+}
+
+.fng-info .fng-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: max-content;
+  max-width: 280px;
+  background: #0b0e11;
+  color: #e2e8f0;
+  text-align: left;
+  font-family: inherit;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.45;
+  padding: 10px 12px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+/* centre the bubble over the icon on the homepage card */
+.fng-card .fng-info .fng-tooltip {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.fng-info .fng-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  border: 6px solid transparent;
+  border-top-color: #0b0e11;
+}
+
+.fng-card .fng-info .fng-tooltip::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.fng-info:hover .fng-tooltip,
+.fng-info:focus .fng-tooltip {
+  opacity: 1;
+  visibility: visible;
+}

@@ -4,6 +4,22 @@
   const API_URL = "https://api.alternative.me/fng/?limit=1";
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+  const TOOLTIP_HTML = `
+    <div class="tw-font-semibold tw-mb-1">How is the Fear &amp; Greed Index calculated?</div>
+    <div>The Crypto Fear &amp; Greed Index (0–100) is provided by
+      <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank" rel="noopener"
+         style="color:#7dd3fc;text-decoration:underline;">alternative.me</a>.
+      It blends six market signals into a single sentiment score:</div>
+    <ul style="margin:6px 0 0;padding-left:16px;list-style:disc;">
+      <li>Volatility — 25%</li>
+      <li>Market Momentum / Volume — 25%</li>
+      <li>Social Media — 15%</li>
+      <li>Surveys — 15%</li>
+      <li>Bitcoin Dominance — 10%</li>
+      <li>Google Trends — 10%</li>
+    </ul>
+    <div style="margin-top:6px;">0 = Extreme Fear · 100 = Extreme Greed.</div>`;
+
   // ---- state -------------------------------------------------------------
   let cache = null; // { value, label, ts }
   let started = false;
@@ -50,21 +66,28 @@
     return card || null;
   };
 
-  const findBtcPriceBlock = () => {
-    const wrap = document.querySelector('div[data-coin-show-target="staticCoinPrice"]');
-    if (!wrap) return null;
-    return (
-      wrap.querySelector("div.tw-mb-2.lg\\:tw-mb-3.tw-flex.tw-items-center.tw-flex-wrap") ||
-      wrap
-    );
+  const findBtcMarketCapRow = () => {
+    const ths = [...document.querySelectorAll("th")].filter((el) => {
+      const t = el.textContent.replace(/\s+/g, " ").trim().toLowerCase();
+      return t === "market cap";
+    });
+    if (!ths.length) return null;
+    const row = ths[0].closest("tr");
+    return row || null;
   };
 
-  const findAnchor = (page) => (page === "home" ? findHomeVolumeCard() : findBtcPriceBlock());
+  const findAnchor = (page) => (page === "home" ? findHomeVolumeCard() : findBtcMarketCapRow());
 
-  // ---- card construction -------------------------------------------------
+  // ---- builders ----------------------------------------------------------
+  const infoIcon = () =>
+    `<span class="fng-info tw-inline-block" tabindex="0">` +
+    `<i data-view-component="true" class="far fa-info-circle fa-fw"></i>` +
+    `<span class="fng-tooltip" role="tooltip">${TOOLTIP_HTML}</span>` +
+    `</span>`;
+
   const buildCard = () => {
     const card = document.createElement("div");
-    card.setAttribute("data-fng-card", "");
+    card.setAttribute("data-fng-card", "home");
     card.className =
       "fng-card tw-overflow-hidden tw-flex tw-items-center tw-justify-between " +
       "tw-gap-3 tw-rounded-xl tw-bg-white tw-p-4 tw-ring-2 tw-h-full " +
@@ -80,6 +103,7 @@
         <div class="tw-mt-1 tw-flex tw-flex-wrap tw-items-center tw-text-gray-500
                     dark:tw-text-moon-200 tw-font-semibold tw-text-sm tw-leading-5">
           Fear &amp; Greed Index
+          ${infoIcon()}
           <span class="fng-class tw-ml-1.5 tw-font-semibold"></span>
         </div>
       </div>
@@ -91,23 +115,43 @@
     return card;
   };
 
-  const populate = (card, data) => {
-    const value = String(data.value);
-    const color = colorFor(data.value);
-    card.querySelector(".fng-value").textContent = value;
-    const cls = card.querySelector(".fng-class");
-    cls.textContent = data.label ? "· " + data.label : "";
-    cls.style.color = color;
-    const gauge = card.querySelector(".fng-gauge");
-    gauge.style.setProperty("--fng-value", value);
-    gauge.style.setProperty("--fng-color", color);
-    gauge.querySelector(".fng-gauge-inner").textContent = value;
-    card.classList.toggle("fng-dark", isDark());
+  const buildLine = () => {
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-fng-card", "btc");
+    tr.setAttribute("data-view-component", "true");
+    tr.className = "tw-flex tw-justify-between tw-py-3";
+    tr.innerHTML = `
+      <th data-view-component="true" class="tw-text-left tw-text-gray-500 dark:tw-text-moon-200 tw-font-medium tw-text-sm tw-leading-5">
+        Fear &amp; Greed Index
+        ${infoIcon()}
+      </th>
+      <td data-view-component="true" class="tw-pl-2 tw-text-right tw-text-gray-900 dark:tw-text-moon-50 tw-font-semibold tw-text-sm tw-leading-5">
+        <span class="fng-value">--</span><span class="fng-class tw-ml-1.5 tw-font-semibold"></span>
+      </td>`;
+    return tr;
   };
 
-  const loadData = (card) => {
+  const buildFor = (page) => (page === "home" ? buildCard() : buildLine());
+
+  const populate = (el, data) => {
+    const value = String(data.value);
+    const color = colorFor(data.value);
+    el.querySelector(".fng-value").textContent = value;
+    const cls = el.querySelector(".fng-class");
+    cls.textContent = data.label ? "· " + data.label : "";
+    cls.style.color = color;
+    const gauge = el.querySelector(".fng-gauge");
+    if (gauge) {
+      gauge.style.setProperty("--fng-value", value);
+      gauge.style.setProperty("--fng-color", color);
+      gauge.querySelector(".fng-gauge-inner").textContent = value;
+    }
+    el.classList.toggle("fng-dark", isDark());
+  };
+
+  const loadData = (el) => {
     if (cache && Date.now() - cache.ts < CACHE_TTL) {
-      populate(card, cache);
+      populate(el, cache);
       return;
     }
     fetch(API_URL)
@@ -119,7 +163,7 @@
         const d = json && json.data && json.data[0];
         if (!d) throw new Error("no data");
         cache = { value: d.value, label: d.value_classification, ts: Date.now() };
-        populate(card, cache);
+        populate(el, cache);
       })
       .catch(() => {
         /* leave placeholders ("--") on failure */
@@ -145,17 +189,9 @@
     const anchor = findAnchor(page);
     if (!anchor) return; // not rendered yet — observer will retry
 
-    const card = buildCard();
-    card.setAttribute("data-fng-card", page);
-
-    if (page === "home") {
-      anchor.insertAdjacentElement("afterend", card);
-    } else {
-      card.classList.add("tw-mt-2", "lg:tw-mt-3");
-      anchor.insertAdjacentElement("afterend", card);
-    }
-
-    loadData(card);
+    const el = buildFor(page);
+    anchor.insertAdjacentElement("afterend", el);
+    loadData(el);
   };
 
   // ---- bootstrap ---------------------------------------------------------
