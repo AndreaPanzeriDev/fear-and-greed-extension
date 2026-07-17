@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Fear & Greed Index for CoinGecko",
   "version": "1.0.0",
-  "description": "Displays the crypto Fear & Greed Index (from alternative.me) directly inside CoinGecko: on the homepage (next to the 24h Trading Volume card) and on the Bitcoin page (under the price).",
+  "description": "Shows the crypto Fear & Greed Index from alternative.me inside CoinGecko (homepage & Bitcoin page).",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
