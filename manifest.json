@@ -17,6 +17,9 @@
     }
   ],
   "permissions": [],
+  "host_permissions": [
+    "https://api.alternative.me/*"
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "fear-greed-coingecko@opencode.dev",
