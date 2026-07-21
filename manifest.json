@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fear & Greed Index for CoinGecko",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Shows the crypto Fear & Greed Index from alternative.me inside CoinGecko (homepage & Bitcoin page).",
   "icons": {
     "16": "icons/icon16.png",
