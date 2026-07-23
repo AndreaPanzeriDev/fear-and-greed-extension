@@ -1,12 +1,20 @@
 {
   "manifest_version": 3,
   "name": "Fear & Greed Index for CoinGecko",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Shows the crypto Fear & Greed Index from alternative.me inside CoinGecko (homepage & Bitcoin page).",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_scripts": [
     {
@@ -18,7 +26,8 @@
   ],
   "permissions": [],
   "host_permissions": [
-    "https://api.alternative.me/*"
+    "https://api.alternative.me/*",
+    "https://api.coingecko.com/*"
   ],
   "browser_specific_settings": {
     "gecko": {
