@@ -89,8 +89,16 @@
   };
 
   const fetchData = () => {
+    const btn = document.getElementById("reloadBtn");
+    btn.classList.add("spinning");
+
     let fngOk = false;
     let btcOk = false;
+
+    const done = () => {
+      updateFooter(fngOk, btcOk);
+      btn.classList.remove("spinning");
+    };
 
     fetch(FNG_URL)
       .then((r) => {
@@ -104,9 +112,7 @@
         fngOk = true;
       })
       .catch(() => {})
-      .finally(() => {
-        updateFooter(fngOk, btcOk);
-      });
+      .finally(done);
 
     fetch(BTC_PRICE_URL)
       .then((r) => {
@@ -120,9 +126,7 @@
         btcOk = true;
       })
       .catch(() => {})
-      .finally(() => {
-        updateFooter(fngOk, btcOk);
-      });
+      .finally(done);
 
     fetch(BTC_SPARK_URL)
       .then((r) => {
@@ -136,8 +140,12 @@
   };
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", fetchData);
+    document.addEventListener("DOMContentLoaded", () => {
+      fetchData();
+      document.getElementById("reloadBtn").addEventListener("click", fetchData);
+    });
   } else {
     fetchData();
+    document.getElementById("reloadBtn").addEventListener("click", fetchData);
   }
 })();

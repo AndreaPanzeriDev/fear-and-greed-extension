@@ -153,6 +153,37 @@ body {
   gap: 6px;
 }
 
+.reload-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.reload-btn:hover {
+  color: #1a1a1a;
+}
+
+.reload-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.reload-btn.spinning svg {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .updated {
   font-size: 10px;
   color: #9ca3af;
